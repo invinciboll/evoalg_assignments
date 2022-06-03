@@ -5,7 +5,7 @@ setwd('C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_04')
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # # Helper functions:
 # Input data, and (optional) render the graph
-read_data <- function(filename, plot) {
+read_data <- function(filename, render_graph) {
   data <- read.csv(file = filename, sep = " ", header = FALSE)
 
   
@@ -234,12 +234,12 @@ op_swap_mutation <- function(individual, mutate_prob) {
 
 
 # # The GA
-run <- function(filename, population_size, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, plot=FALSE) {
+run <- function(filename, population_size, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph=FALSE) {
   # Crate result matrix for plotting
   fitness_development <- matrix(,nrow=0, ncol=population_size)
 
   # Read data
-  dist1 <- read_data(filename, plot)
+  dist1 <- read_data(filename, render_graph)
   # INITIALISE
   population <- init(dist1, population_size)
   # EVALUATE

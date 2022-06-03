@@ -1,4 +1,5 @@
-# Pseudocode of the GA (from script):
+## Pseudocode of the GA (from script_03 p.18, p.19):
+```
 INITIALIZE
 EVALUATE
 REPEAT
@@ -7,15 +8,18 @@ REPEAT
     MUTATE: For each offspring apply mutation (a mutation rate or probability is applied at every gene)
     EVALUATE offspring
     SELECT survivors (or replacement): replace the whole population with the resulting offspring (and random choices to reach the population size)
-TERMINATION?
-
-# Parameters for the GA
-filename            =   Filename of input data
-population_size     =   Size of the population
-generations         =   
-op_recombination    =   operator  
-recombine_prob      =   
-op_mutation
-mutate_prob
-selection_pressure
-plot=FALSE
+TERMINATION
+```
+Note: In the second SELECT, we just replace our population with the offspring. The amount of surviving parents can be controlled by the probability of the recombination and mutation parameters.
+## Parameters for the GA
+|Parameter | Type | |
+|------------------------|----------------|----------------------------------------------------------------------------|
+|filename                |[String]        | Filename of input data |
+|population_size         |[Integer]       | Size of the population |
+|generations             |[Integer]       | Number of generations (GA loops) |
+|op_recombination        |[Function]      | Pass the operator you want to use {op_basic_recomb | op_edge3} |
+|recombine_prob          |[Float]         | Probability to apply recombination on pair of consecutive parents |
+|op_mutation             |[Function]      | Pass the operator you want to use {op_insert_mutation | op_swap_mutation} |
+|mutate_prob             |[Float]         | Probability to apply mutation on a gene of an individual |
+|selection_pressure      |[Float] > 1     | Slection pressure for parent selection |
+|render_graph            |[Boolean]       | Set TRUE if you want to render the graph from the given distance matrix |(default=FALSE)
