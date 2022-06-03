@@ -144,30 +144,34 @@ op_basic_calc_individuals <- function(indv_a, indv_b) {
   return(list(new_a, new_b))
 }
 
-# TODO: überarbeiten, das 10 Individuen erzeugt werden
 # RECOMBINE
 op_edge3 <- function(selected_individuals, recombine_prob) {
   offspring <- matrix(, nrow = nrow(selected_individuals), ncol = ncol(selected_individuals))
   
   i <- 1
-  while (i < nrow(selected_individuals)){
-    # Select consecutive pair of individuals (parents)
-    indv_a <- selected_individuals[i, ]
-    indv_b <- selected_individuals[i + 1, ]
+  while (i <= nrow(selected_individuals)){
+    # Select pairs of individuals
+    if(i == nrow(selected_individuals)) {
+      indv_a <- selected_individuals[nrow(selected_individuals), ]
+      indv_b <- selected_individuals[1, ]
+    } else {
+      indv_a <- selected_individuals[i, ]
+      indv_b <- selected_individuals[i + 1, ]
+    }
 
     # Recombine ?
     if (sample(c(FALSE, TRUE), 1, prob = c(1 - recombine_prob, recombine_prob))) {
       # Yes!
-      new_indv_list <- op_edge3_create_offspring(indv_a, indv_b)
+      offspring[i, ] <- op_edge3_create_offspring(indv_a, indv_b)
       # offspring[i, ] <- new_indv_list[[1]]
       # offspring[i + 1, ] <- new_indv_list[[2]]
     } else {
       # No!
-      # offspring[i, ] <- indv_a
+      offspring[i, ] <- indv_a
       # offspring[i + 1, ] <- indv_b
     }
 
-    i <- i + 2
+    i <- i + 1
   }
   return(offspring)
 }
@@ -198,8 +202,7 @@ op_edge3_create_offspring <- function(indiv_a, indiv_b) {
   }
   
   # Do recomb
-  child <- op_edge3_create_individual(edge_matrix)
-  # Prios: 1. common element, 
+  return(op_edge3_create_individual(edge_matrix))
 }
 
 op_edge3_create_individual <- function(edge_matrix) {
@@ -209,7 +212,7 @@ op_edge3_create_individual <- function(edge_matrix) {
   # 1. Pick inital element at random
   child <- append(child, sample(edge_matrix[ ,1], 1))
   # Repeat
-  for(i in seq_len(length(edge_matrix[ ,1]))) {
+  for(i in seq_len(length(edge_matrix[ ,1]) - 1)) {
     # 1. current element is entry
     current <- child[i]
     # 4. If reaching an empty list 
