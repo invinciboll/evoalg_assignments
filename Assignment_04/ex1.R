@@ -28,18 +28,25 @@ plot_full_helper <- function(data, population_size, generations, name, legendx="
     }
 }
 
-plot_full <- function(data1, data2, filename) {
+plot_full <- function(data1, data2, data3, data4, filename) {
   par(mfrow = c(2, 1))
+  # standard plots
   plot_full_helper(data1, population_size = 10, generations = 100, filename)
   plot_full_helper(data2, population_size = 100, generations = 100, filename)
+  # Edge3 plots
+  plot_full_helper(data3, population_size = 10, generations = 100, paste(filename, " - Edge-3 "))
+  plot_full_helper(data4, population_size = 100, generations = 100, paste(filename, " - Edge-3"))
 }
 
-plot_avg <- function(data1, data2, name) {
+plot_avg <- function(data1, data2, data3, data4, name) {
   par(mfrow = c(2, 1))
   legendx = "generations"
   legendy = "fitness"
   plot(c(seq_len(length(data1))), data1, main=paste(name, ", ", "population size: ", 10), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data1), max(data1)))
   plot(c(seq_len(length(data2))), data2, main=paste(name, ", ", "population size: ", 100), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data2), max(data2)))
+
+  plot(c(seq_len(length(data1))), data1, main=paste(name, " - Edge-3, ", "population size: ", 10), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data3), max(data3)))
+  plot(c(seq_len(length(data2))), data2, main=paste(name, " - Edge-3, ", "population size: ", 100), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data4), max(data4)))
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -386,25 +393,33 @@ main <- function(filename1, filename2, filename3, generations, op_recombination,
   print(paste("Working on ", filename1))
   fitness_development_dist1_10 <- GA(filename1, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph=render_graph)
   fitness_development_dist1_100 <- GA(filename1, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+  edge3_development_dist1_10 <- GA(filename1, population_size=10, generations=generations, op_recombination=op_edge3, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph=render_graph)
+  # edge3
+  edge3_development_dist1_100 <- GA(filename1, population_size=100, generations=generations, op_recombination=op_edge3, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   print(paste("Working on ", filename2))
   fitness_development_dist2_10 <- GA(filename2, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   fitness_development_dist2_100 <- GA(filename2, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+  # edge3
+  edge3_development_dist2_10 <- GA(filename2, population_size=10, generations=generations, op_recombination=op_edge3, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+  edge3_development_dist2_100 <- GA(filename2, population_size=100, generations=generations, op_recombination=op_edge3, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   print(paste("Working on ", filename3))
   fitness_development_dist3_10 <- GA(filename3, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   fitness_development_dist3_100 <- GA(filename3, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
-  
+  edge3_development_dist3_10 <- GA(filename3, population_size=10, generations=generations, op_recombination=op_edge3, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+  edge3_development_dist3_100 <- GA(filename3, population_size=100, generations=generations, op_recombination=op_edge3, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+
   print("Plotting full plots ...")
   pdf(file = "plots-full.pdf")
-  plot_full(fitness_development_dist1_10, fitness_development_dist1_100, filename1)
-  plot_full(fitness_development_dist2_10, fitness_development_dist2_100, filename2)
-  plot_full(fitness_development_dist3_10, fitness_development_dist3_100, filename3)
+  plot_full(fitness_development_dist1_10, fitness_development_dist1_100, edge3_development_dist1_10, edge3_development_dist1_100, filename1)
+  plot_full(fitness_development_dist2_10, fitness_development_dist2_100, edge3_development_dist2_10, edge3_development_dist2_100, filename2)
+  plot_full(fitness_development_dist3_10, fitness_development_dist3_100, edge3_development_dist3_10, edge3_development_dist3_100, filename3)
   dev.off()
 
   print("Plotting average fitness plots ...")
   pdf(file = "plots-avg.pdf")
-  plot_avg(rowMeans(fitness_development_dist1_10), rowMeans(fitness_development_dist1_100), filename1)
-  plot_avg(rowMeans(fitness_development_dist2_10), rowMeans(fitness_development_dist2_100), filename2)
-  plot_avg(rowMeans(fitness_development_dist3_10), rowMeans(fitness_development_dist3_100), filename3)
+  plot_avg(rowMeans(fitness_development_dist1_10), rowMeans(fitness_development_dist1_100), rowMeans(edge3_development_dist1_10), rowMeans(edge3_development_dist1_100), filename1)
+  plot_avg(rowMeans(fitness_development_dist2_10), rowMeans(fitness_development_dist2_100), rowMeans(edge3_development_dist2_10), rowMeans(edge3_development_dist2_100), filename2)
+  plot_avg(rowMeans(fitness_development_dist3_10), rowMeans(fitness_development_dist3_100), rowMeans(edge3_development_dist3_10), rowMeans(edge3_development_dist3_100), filename3)
   dev.off()
 }
 
