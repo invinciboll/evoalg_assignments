@@ -7,7 +7,6 @@ setwd('C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_04')
 # Input data, and (optional) render the graph
 read_data <- function(filename, render_graph) {
   data <- read.csv(file = filename, sep = " ", header = FALSE)
- 
   if (render_graph) {
     # Render graph from distance matrix
     x <- as.dist(t(data))
@@ -247,7 +246,7 @@ op_swap_mutation <- function(individual, mutate_prob) {
 
 
 # GA
-GA <- function(filename, population_size, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph=FALSE) {
+GA <- function(filename, population_size, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph) {
   # Crate result matrix for plotting
   fitness_development <- matrix(,nrow=0, ncol=population_size)
 
@@ -286,14 +285,14 @@ GA <- function(filename, population_size, generations, op_recombination, recombi
 # #  Section for config, running
 main <- function(filename1, filename2, filename3, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph=FALSE) {
   print(paste("Working on ", filename1))
-  fitness_development_dist1_10 <- GA(filename1, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
-  fitness_development_dist1_100 <- GA(filename1, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  fitness_development_dist1_10 <- GA(filename1, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph=render_graph)
+  fitness_development_dist1_100 <- GA(filename1, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   print(paste("Working on ", filename2))
-  fitness_development_dist2_10 <- GA(filename2, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
-  fitness_development_dist2_100 <- GA(filename2, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  fitness_development_dist2_10 <- GA(filename2, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+  fitness_development_dist2_100 <- GA(filename2, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   print(paste("Working on ", filename3))
-  fitness_development_dist3_10 <- GA(filename3, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
-  fitness_development_dist3_100 <- GA(filename3, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  fitness_development_dist3_10 <- GA(filename3, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
+  fitness_development_dist3_100 <- GA(filename3, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure, render_graph = render_graph)
   
   print("Plotting full plots ...")
   pdf(file = "plots-full.pdf")
@@ -320,5 +319,6 @@ recombine_prob <- 0.75
 op_mutation <- op_swap_mutation
 mutate_prob <- 0.025
 selection_pressure <- 1.2
+render_graph <- FALSE
 
-main(filename1, filename2, filename3, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure)
+main(filename1, filename2, filename3, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph)
