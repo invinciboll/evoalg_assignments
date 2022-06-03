@@ -321,4 +321,5 @@ mutate_prob <- 0.025
 selection_pressure <- 1.2
 render_graph <- FALSE
 
+set.seed(as.numeric(Sys.time()))
 main(filename1, filename2, filename3, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph)
