@@ -1,0 +1,7 @@
+# Aufgabe 1, c)
+## Beobachtungen zu a
+- Der Skalar nu beinflusst wieviele Schritte benötigt werden um einen Hochpunkt zu finden
+- Je kleiner der Skalar ist, desto "weiter" wird die Funktion (hier unsere Fitnesslandschaft) gestreckt, folglich werden mehr Schritte benötigt um das Maximum zu erreichen (bei gleichem Delta-x) 
+- Der Startwert x_k beeinflusst maßgeblich welcher Hochpunkt gefunden wird (z.B. bei sin(x))
+## Beobachtungen zu b
+- bei einem variablen Delta ändern sich die Nachkommastellen flexibler und nicht in festen Schritten, wodurch auch nach 100 Generationen noch Diversität zwischen den Individuen zu finden ist
