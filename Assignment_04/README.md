@@ -35,7 +35,7 @@ Set your desired parameters at the config section and run the script. It will pr
 |Generations | Increasing the generations can yield better results until a threshold is reached, where no further improvements can be seen.|
 |Recombine operator ||
 |Recombine probability||
-|Mutation operator||
+|Mutation operator|There are big differences between swap and insert operator. The insert operator is way faster, but the swap operator yields better results|
 |Mutation probability/rate| Its difficult to find the right amount of mutations. If we use too many mutations we lose our progress because neighborhoods get destroyed. If we use not too less mutation, we can't achieve good fitness values because the population might get too homogenous. |
 |Selection pressure| Higher selection pressure kills the bad individuals early, but can result in a too homogenous population, where no further improvements can be achieved besides using heavy mutations. |
 
