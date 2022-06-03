@@ -226,7 +226,7 @@ op_swap_mutation <- function(individual, mutate_prob) {
 
 
 # # The GA
-run <- function(filename, population_size, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph=FALSE) {
+GA <- function(filename, population_size, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph=FALSE) {
   # Crate result matrix for plotting
   fitness_development <- matrix(,nrow=0, ncol=population_size)
 
@@ -262,44 +262,35 @@ run <- function(filename, population_size, generations, op_recombination, recomb
 
 # # Run
 # Warning: selection_pressure, population_size have a big influence on computational time, as well as generations of course
-#fitness_development_1 <- run("dist1.txt", population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_insert_mutation, mutate_prob=0.025, selection_pressure=1.2)
-
-run_stuff <- function(filename) {
-  fitness_development_10 <- run(filename, population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
-  fitness_development_100 <- run(filename, population_size=100, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
-  par(mfrow = c(2, 1))
-  plot_data(fitness_development_10, population_size = 10, generations=100, filename)
-  plot_data(fitness_development_100, population_size = 100, generations=100, filename)
-}
+#fitness_development_1 <- GA("dist1.txt", population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_insert_mutation, mutate_prob=0.025, selection_pressure=1.2)
 
 run_ga <- function(filename) {
-  fitness_development_10 <- run(filename, population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
-  fitness_development_100 <- run(filename, population_size=100, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
+  fitness_development_10 <- GA(filename, population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
+  fitness_development_100 <- GA(filename, population_size=100, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
   return(list(fitness_development_10, fitness_development_100))
 }
 
 # #
 
-plot_data_full <- function(data, population_size, generations, name, legendx="generations", legendy="fitness") {
+plot_full_helper <- function(data, population_size, generations, name, legendx="generations", legendy="fitness") {
     plot(c(1:generations), data[,1], main=paste(name, ", ", "population size: ", population_size), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data), max(data)))
     for(i in seq_len(ncol(data))) {
       lines(c(1:generations), data[,i], col=i,lty=2)
     }
 }
 
-plot_data_avg <- function(data, population_size, generations, name, legendx="generations", legendy="fitness") {
-    plot(c(1:generations), data, main=paste(name, ", ", "population size: ", population_size), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data), max(data)))
-}
-
 plot_full <- function(data1, data2, filename) {
   par(mfrow = c(2, 1))
-  plot_data_full(data1, population_size = 10, generations=100, filename)
-  plot_data_full(data2, population_size = 100, generations=100, filename)
+  plot_full_helper(data1, population_size = 10, generations = 100, filename)
+  plot_full_helper(data2, population_size = 100, generations = 100, filename)
 }
-plot_avg <- function(data1, data2, filename) {
+
+plot_avg <- function(data1, data2, name) {
   par(mfrow = c(2, 1))
-  plot_data_avg(data1, population_size = 10, generations=100, filename)
-  plot_data_avg(data2, population_size = 100, generations=100, filename)
+  legendx = "generations"
+  legendy = "fitness"
+  plot(c(seq_len(length(data1))), data1, main=paste(name, ", ", "population size: ", 10), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data1), max(data1)))
+  plot(c(seq_len(length(data2))), data2, main=paste(name, ", ", "population size: ", 100), xlab=legendx, ylab=legendy, type="o", col="blue", pch=".", lty=1, ylim=range(min(data2), max(data2)))
 }
 
 print("Running GAs... this may take a while ...")
@@ -311,14 +302,14 @@ print("Running dist3")
 results_3 <- run_ga("dist3.txt")
 
 print("Plotting full plots ...")
-pdf(file="plots-full.pdf")
+pdf(file = "plots-full.pdf")
 plot_full(results_1[[1]], results_1[[2]], "dist1.txt")
 plot_full(results_2[[1]], results_2[[2]], "dist2.txt")
 plot_full(results_3[[1]], results_3[[2]], "dist3.txt")
 dev.off()
 
 print("Plotting average fitness plots ...")
-pdf(file="plots-avg.pdf")
+pdf(file = "plots-avg.pdf")
 plot_avg(rowMeans(results_1[[1]]), rowMeans(results_1[[2]]), "dist1.txt")
 plot_avg(rowMeans(results_2[[1]]), rowMeans(results_2[[2]]), "dist2.txt")
 plot_avg(rowMeans(results_3[[1]]), rowMeans(results_3[[2]]), "dist3.txt")
