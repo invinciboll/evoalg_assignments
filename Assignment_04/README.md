@@ -1,3 +1,4 @@
+# Josef Mayer, Sebastian Boll
 ## Pseudocode of the GA (from script_03 p.18, p.19):
 ```
 INITIALIZE
@@ -23,3 +24,14 @@ Note: In the second SELECT, we just replace our population with the offspring. T
 |mutate_prob             |[Float]         | Probability to apply mutation on a gene of an individual |
 |selection_pressure      |[Float] > 1     | Slection pressure for parent selection |
 |render_graph            |[Boolean]       | Set TRUE if you want to render the graph from the given distance matrix |(default=FALSE)
+
+## Observations
+|||
+|-|-|
+|Population size | Increasing the population size leads to better results in less generations. This is logical because with a higher population we have more chances to evolve towards a better fitness in each generation. |
+|Generations | Increasing the generations can yield better results until a threshold is reached, where no further improvements can be seen.|
+|Recombine operator | |
+|Recombine probability| |
+|Mutation operator| |
+|Mutation probability/rate| Its difficult to find the right amount of mutations. If we use too many mutations we lose our progress because neighborhoods get destroyed. If we use not too less mutation, we can't achieve good fitness values because the population might get too homogenous. |
+|Selection pressure| Higher selection pressure kills the bad individuals early, but can result in a too homogenous population, where no further improvements can be achieved besides using heavy mutations. |
