@@ -1,3 +1,4 @@
+# Josef Mayer, Sebastian Boll
 ## Pseudocode of the GA (from script_03 p.18, p.19):
 ```
 INITIALIZE
@@ -33,3 +34,18 @@ The Edge-3 Crossover in comparrision to the standard recombination from the lect
 ## Order Corssover
 The order crossover preserves a whole block and therefore preserves the relative order of the elements.
 Specifically for the TSP i see the problematic being that only a block of neighborhood relashionships gets preserved and all the others are only directly taken into account. Therefore if we have a good order of elements the order crossover could/would destory more than the Edge-3 crossover. For other problems with neighbor relashionships this could not be the case and maybe the order crossover could perform better.
+
+## Running
+Set your desired parameters at the config section and run the script. It will produce two output pdf containing the fitness-plots of the GA-Runs.
+
+## Observations
+|||
+|-|-|
+|Population size | Increasing the population size leads to better results in less generations. This is logical because with a higher population we have more chances to evolve towards a better fitness in each generation. |
+|Generations | Increasing the generations can yield better results until a threshold is reached, where no further improvements can be seen.|
+|Recombine operator ||
+|Recombine probability||
+|Mutation operator|There are big differences between swap and insert operator. The insert operator is way faster, but the swap operator yields better results|
+|Mutation probability/rate| Its difficult to find the right amount of mutations. If we use too many mutations we lose our progress because neighborhoods get destroyed. If we use not too less mutation, we can't achieve good fitness values because the population might get too homogenous. |
+|Selection pressure| Higher selection pressure kills the bad individuals early, but can result in a too homogenous population, where no further improvements can be achieved besides using heavy mutations. |
+
