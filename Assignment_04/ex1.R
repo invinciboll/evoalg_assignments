@@ -282,34 +282,43 @@ GA <- function(filename, population_size, generations, op_recombination, recombi
 }
 
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# #  Section for config, running and plotting
-run_ga <- function(filename) {
-  # EDIT GA PARAMETERS HERE 
-  fitness_development_10 <- GA(filename, population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
-  fitness_development_100 <- GA(filename, population_size=100, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
-  return(list(fitness_development_10, fitness_development_100))
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# #  Section for config, running
+main <- function(filename1, filename2, filename3, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure, render_graph=FALSE) {
+  print(paste("Working on ", filename1))
+  fitness_development_dist1_10 <- GA(filename1, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  fitness_development_dist1_100 <- GA(filename1, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  print(paste("Working on ", filename2))
+  fitness_development_dist2_10 <- GA(filename2, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  fitness_development_dist2_100 <- GA(filename2, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  print(paste("Working on ", filename3))
+  fitness_development_dist3_10 <- GA(filename3, population_size=10, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  fitness_development_dist3_100 <- GA(filename3, population_size=100, generations=generations, op_recombination=op_recombination, recombine_prob=recombine_prob, op_mutation=op_mutation, mutate_prob=mutate_prob, selection_pressure=selection_pressure)
+  
+  print("Plotting full plots ...")
+  pdf(file = "plots-full.pdf")
+  plot_full(fitness_development_dist1_10, fitness_development_dist1_100, filename1)
+  plot_full(fitness_development_dist2_10, fitness_development_dist2_100, filename2)
+  plot_full(fitness_development_dist3_10, fitness_development_dist3_100, filename3)
+  dev.off()
+
+  print("Plotting average fitness plots ...")
+  pdf(file = "plots-avg.pdf")
+  plot_avg(rowMeans(fitness_development_dist1_10), rowMeans(fitness_development_dist1_100), filename1)
+  plot_avg(rowMeans(fitness_development_dist2_10), rowMeans(fitness_development_dist2_100), filename2)
+  plot_avg(rowMeans(fitness_development_dist3_10), rowMeans(fitness_development_dist3_100), filename3)
+  dev.off()
 }
 
+# Config here
+filename1 <- "dist1.txt"
+filename2 <- "dist2.txt"
+filename3 <- "dist3.txt"
+generations <- 100
+op_recombination <- op_basic_recomb
+recombine_prob <- 0.75
+op_mutation <- op_swap_mutation
+mutate_prob <- 0.025
+selection_pressure <- 1.2
 
-print("Running GAs... this may take a while ...")
-print("Running dist1")
-results_1 <- run_ga("dist1.txt")
-print("Running dist2")
-results_2 <- run_ga("dist2.txt")
-print("Running dist3")
-results_3 <- run_ga("dist3.txt")
-
-print("Plotting full plots ...")
-pdf(file = "plots-full.pdf")
-plot_full(results_1[[1]], results_1[[2]], "dist1.txt")
-plot_full(results_2[[1]], results_2[[2]], "dist2.txt")
-plot_full(results_3[[1]], results_3[[2]], "dist3.txt")
-dev.off()
-
-print("Plotting average fitness plots ...")
-pdf(file = "plots-avg.pdf")
-plot_avg(rowMeans(results_1[[1]]), rowMeans(results_1[[2]]), "dist1.txt")
-plot_avg(rowMeans(results_2[[1]]), rowMeans(results_2[[2]]), "dist2.txt")
-plot_avg(rowMeans(results_3[[1]]), rowMeans(results_3[[2]]), "dist3.txt")
-dev.off()
+main(filename1, filename2, filename3, generations, op_recombination, recombine_prob, op_mutation, mutate_prob, selection_pressure)
