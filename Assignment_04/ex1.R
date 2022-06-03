@@ -1,5 +1,5 @@
 # Josef Mayer, Sebastian Boll
-setwd('C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_04')
+# setwd('C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_04')
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -64,7 +64,7 @@ evaluate <- function(distance_matrix, population) {
 
 
 # SELECTION
-goldberg_select <- function(fitness_matrix, selection_pressure) {
+parent_select <- function(fitness_matrix, selection_pressure) {
   # Not a real goldberg, because the fitness values are very close together, so i use a function to scale the better fits
   # Create a sample vector as "roulette wheel", add weight the smaller (better) the fitness is
   # Order by worst fitness
@@ -81,7 +81,7 @@ goldberg_select <- function(fitness_matrix, selection_pressure) {
 
 
 # RECOMBINE
-recombine <- function(selected_individuals, operator, recombine_prob) {
+op_basic_recomb <- function(selected_individuals, recombine_prob) {
   offspring <- matrix(, nrow = nrow(selected_individuals), ncol = ncol(selected_individuals))
   
   i <- 1
@@ -93,7 +93,7 @@ recombine <- function(selected_individuals, operator, recombine_prob) {
     # Recombine ?
     if (sample(c(FALSE, TRUE), 1, prob = c(1 - recombine_prob, recombine_prob))) {
       # Yes!
-      new_indv_list <- operator(indv_a, indv_b)
+      new_indv_list <- op_basic_calc_individuals(indv_a, indv_b)
       offspring[i, ] <- new_indv_list[[1]]
       offspring[i + 1, ] <- new_indv_list[[2]]
     } else {
@@ -107,7 +107,7 @@ recombine <- function(selected_individuals, operator, recombine_prob) {
   return(offspring)
 }
 
-op_basic_recomb <- function(indv_a, indv_b) {
+op_basic_calc_individuals <- function(indv_a, indv_b) {
   # From script_03 page 44
   # Note: We expect indv a and b to have the same length
   # Choose random crossover point, but guarantee that it splits the bitspring ("-1")
@@ -144,34 +144,130 @@ op_basic_recomb <- function(indv_a, indv_b) {
   return(list(new_a, new_b))
 }
 
-op_edge3 <- function(indv_a, indv_b) {
+# TODO: überarbeiten, das 10 Individuen erzeugt werden
+# RECOMBINE
+op_edge3 <- function(selected_individuals, recombine_prob) {
+  offspring <- matrix(, nrow = nrow(selected_individuals), ncol = ncol(selected_individuals))
+  
+  i <- 1
+  while (i < nrow(selected_individuals)){
+    # Select consecutive pair of individuals (parents)
+    indv_a <- selected_individuals[i, ]
+    indv_b <- selected_individuals[i + 1, ]
+
+    # Recombine ?
+    if (sample(c(FALSE, TRUE), 1, prob = c(1 - recombine_prob, recombine_prob))) {
+      # Yes!
+      new_indv_list <- op_edge3_create_offspring(indv_a, indv_b)
+      # offspring[i, ] <- new_indv_list[[1]]
+      # offspring[i + 1, ] <- new_indv_list[[2]]
+    } else {
+      # No!
+      # offspring[i, ] <- indv_a
+      # offspring[i + 1, ] <- indv_b
+    }
+
+    i <- i + 2
+  }
+  return(offspring)
+}
+
+op_edge3_create_offspring <- function(indiv_a, indiv_b) {
   # Generate edge matrix
-  edge_matrix <- matrix(, nrow = length(indv_a), ncol = 5)
-  for (i in seq_len(length(indv_a))){
-    row <- c()
-    index_a <- match(i, indv_a)
+  edge_matrix <- matrix(, nrow = length(indiv_a), ncol = 5)
+  for (i in seq_len(length(indiv_a))){
+    neighbours <- c()
+
+    index_a <- match(i, indiv_a)
     if (index_a == 1) {
-      row <- c(i, indv_a[length(indv_a)], indv_a[index_a + 1])
-    } else if (index_a == length(indv_a)) {
-       row <- c(i, indv_a[index_a - 1], indv_a[1])
+      neighbours <- c(i, indiv_a[length(indiv_a)], indiv_a[index_a + 1])
+    } else if (index_a == length(indiv_a)) {
+      neighbours <- c(i, indiv_a[index_a - 1], indiv_a[1])
     } else {
-      row <- c(i, indv_a[index_a - 1], indv_a[index_a + 1])
+      neighbours <- c(i, indiv_a[index_a - 1], indiv_a[index_a + 1])
     }
-    index_b <- match(i, indv_b)
+    index_b <- match(i, indiv_b)
     if (index_b == 1) {
-      row <- c(row, indv_b[length(indv_b)], indv_b[index_b + 1])
-    } else if (index_b == length(indv_b)) {
-      row <- c(row, indv_b[index_b - 1], indv_b[1])
+      neighbours <- c(neighbours, indiv_b[length(indiv_b)], indiv_b[index_b + 1])
+    } else if (index_b == length(indiv_b)) {
+      neighbours <- c(neighbours, indiv_b[index_b - 1], indiv_b[1])
     } else {
-      row <- c(row, indv_b[index_b - 1], indv_b[index_b + 1])
+      neighbours <- c(neighbours, indiv_b[index_b - 1], indiv_b[index_b + 1])
     }
-    edge_matrix[i, ] <- row
+    edge_matrix[i, ] <- neighbours
   }
   
   # Do recomb
+  child <- op_edge3_create_individual(edge_matrix)
   # Prios: 1. common element, 
 }
 
+op_edge3_create_individual <- function(edge_matrix) {
+  child <- c()
+  # for 4. tracking which elements are not used yet
+  not_used <- edge_matrix[ ,1]
+  # 1. Pick inital element at random
+  child <- append(child, sample(edge_matrix[ ,1], 1))
+  # Repeat
+  for(i in seq_len(length(edge_matrix[ ,1]))) {
+    # 1. current element is entry
+    current <- child[i]
+    # 4. If reaching an empty list 
+    #   - new element is choosen at random
+    if(sum(edge_matrix[current, ]) == 0) {
+      current <- sample(not_used, 1)
+      not_used <- not_used[! not_used == current]
+    }
+    # 2. remove entry from the distance matrix
+    for(j in 2:5) {
+      for(k in seq_len(nrow(edge_matrix))) {
+        # cat(edge_matrix[k,j], "==", current, "\n")
+        if(edge_matrix[k,j] == current) {
+          # setting the value to Inf causes that the value can not be used anymore
+          edge_matrix[k,j] <- Inf
+        }
+      }
+    }
+    # 3. examine list for current element
+    found_next_element <- FALSE
+    neighbours <- edge_matrix[current, ]
+    # print(neighbours)
+    #   - common edge (+), pick that to be the next element
+    for(j in 2:length(neighbours)) {
+      for(k in j:length(neighbours)) {
+        # check if duplocate was found and if the duplicated is not a deleted element, that is still in the matrix
+        if(j == k && !found_next_element && j != Inf) {
+          # found a common edge
+          child <- append(child, neighbours[j])
+          found_next_element <- TRUE
+          not_used <- not_used[! not_used == j]
+        }
+      }
+    }
+    #   - Pick the entry in the list which has the shortest list
+    if(!found_next_element) {
+      neighbours_length <- c()
+      for(j in 2:length(neighbours)) {
+        neighbours_length <- append(neighbours_length, length(edge_matrix[j, ]))
+      }
+      mins <- which(neighbours_length == min(neighbours_length))
+      # only one minimum found
+      if(length(mins) == 1) {
+        child <- append(child, which.min(neighbours_length))
+        not_used <- not_used[! not_used %in% c(which.min(neighbours_length))]
+      }
+      #   - Ties are split at random
+      # multiple minima found 
+      else {
+        index <- sample(mins,1)
+        child <- append(child, edge_matrix[1, index])
+        not_used <- not_used[! not_used %in% c(edge_matrix[1, index])]
+      }
+    }
+    found_next_element <- FALSE
+  }
+  return(child)
+}
 
 # MUTATE
 mutate <- function(offspring, operator, mutate_prob) {
@@ -248,13 +344,13 @@ run <- function(filename, population_size, generations, op_recombination, recomb
   # REPEAT
   for (i in seq_len(generations)){
     # SELECT
-    selected_individuals_indices <- goldberg_select(fitness_matrix, selection_pressure)
+    selected_individuals_indices <- parent_select(fitness_matrix, selection_pressure)
     selected_individuals <- matrix(, nrow = population_size, ncol = ncol(population))
     for (i in seq_len(length(selected_individuals_indices))) {
       selected_individuals[i, ] <- population[selected_individuals_indices[i], ]
     }
     # RECOMBINE
-    offspring <- recombine(selected_individuals, op_recombination, recombine_prob)
+    offspring <- op_recombination(selected_individuals, recombine_prob)
     # MUTATE
     mutated_offspring <- mutate(offspring, op_mutation, mutate_prob)
     # EVALUATE offspring 
@@ -276,4 +372,10 @@ run <- function(filename, population_size, generations, op_recombination, recomb
 
 
 # These settings make quite a nice plot:
-fitness_development_1 <- run("dist1.txt", population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
+#fitness_development_1 <- run("dist1.txt", population_size=10, generations=100, op_recombination=op_basic_recomb, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
+
+
+# Edge-3
+# fitness_development_1 <- run("dist1.txt", population_size=10, generations=100, op_recombination=op_edge3, recombine_prob=0.75, op_mutation=op_insert_mutation, mutate_prob=0.025, selection_pressure=1.2)
+
+fitness_development_1 <- run("dist1.txt", population_size=10, generations=100, op_recombination=op_edge3, recombine_prob=0.75, op_mutation=op_swap_mutation, mutate_prob=0.025, selection_pressure=1.2)
