@@ -66,7 +66,7 @@ sus <- function(fitness_matrix) {
     print(r)
     print("selected:")
     print(sus_selector(r, 1, fitness_matrix))
-
+    
     # TODO: den selector in einer schleife aufrufen um genug individuen ("IDs") zu bekommen
 }
 
@@ -92,7 +92,7 @@ GA <- function(population_size, max_generations) {
   solved <- FALSE
   while(!solved && (current_generation < max_generations)) {
     # SELECT
-    sus(fitness_matrix)
+    selected_ids <- sus(fitness_matrix)
     # RECOMBINE
     offspring <- list()
     # MUTATE
