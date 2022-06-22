@@ -428,7 +428,7 @@ filename1 <- "dist1.txt"
 filename2 <- "dist2.txt"
 filename3 <- "dist3.txt"
 generations <- 100
-op_recombination <- op_edge3      #op_basic_recomb or op_edge3
+op_recombination <- op_basic_recomb      #op_basic_recomb or op_edge3 (edge3 gets now plotted anyways)
 recombine_prob <- 0.75
 op_mutation <- op_swap_mutation   #op_insert_mutation or op_swap_mutation
 mutate_prob <- 0.025
