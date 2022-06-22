@@ -1,15 +1,35 @@
 # Josef Mayer, Sebastian Boll
 setwd("C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_07")
-
+library("mvtnorm")
+# # # Helper functions
 load_rdata <- function(filename) {
     # Object needs to be named 'params'
     load(filename)
     return(params)
 }
 
+plot_gaussians <- function(params) {
+    x.points <- seq(-8, 8, length.out = 100)
+    y.points <- x.points
+    z <- matrix(0, nrow = 100, ncol = 100)
+
+    for (k in seq_len(ncol(params))) {
+        mu <- c(params[1, k], params[2, k])
+        sigma <- matrix(c(params[3, k], 0, 0, params[4, k]), ncol = 2)
+        for (i in 1:100) {
+            for (j in 1:100) {
+                z[i, j] <- z[i, j] + dmvnorm(c(x.points[i], y.points[j]), mean = mu, sigma = sigma)
+            }
+        }
+        cat("\rPlotting gaussians:\t", floor(k / ncol(params) * 100), "%")
+    }
+    contour(x.points, y.points, z)
+}
+# # # ----------------
+
 init <- function(population_size) {
     population <- matrix(, nrow = population_size, ncol = 5)
-    colnames(population) <- c("x", "y", "sigma_x", "sigma_y", "fitness")
+    colnames(population) <- c("x", "y", "sig_x", "sig_y", "fitness")
     for (i in seq_len(nrow(population))) {
         population[i, ] <- c(sample(-5:5, 2), runif(2), NA)
     }
@@ -29,7 +49,7 @@ fitness <- function(x, y, params) {
 # Intermediary recombination
 recombine <- function(population) {
     offspring <- matrix(, nrow = nrow(population), ncol = 5)
-    colnames(offspring) <- c("x", "y", "sigma_x", "sigma_y", "fitness")
+    colnames(offspring) <- c("x", "y", "sig_x", "sig_y", "fitness")
     for (i in seq_len(nrow(population))) {
         # Get 1 random chosen partner (exclude the individual itself)
         partner_index <- i
@@ -68,7 +88,7 @@ select_survivors <- function(population, offspring) {
 
     # Compare parent with its offspring, keep the fitter one. Children are favoured in case of a draw.
     new_population <- matrix(, nrow = nrow(population), ncol = ncol(population))
-    colnames(new_population) <- c("x", "y", "sigma_x", "sigma_y", "fitness")
+    colnames(new_population) <- c("x", "y", "sig_x", "sig_y", "fitness")
 
     for (i in seq_len(nrow(population))) {
         if (population[i, 5] > offspring[i, 5]) {
@@ -82,7 +102,7 @@ select_survivors <- function(population, offspring) {
     return(new_population)
 }
 
-ES <- function(population_size) {
+ES <- function(population_size, generations) {
     params <- load_rdata("params.RData")
 
     # INITIALIZE
@@ -94,15 +114,14 @@ ES <- function(population_size) {
     }
 
     # REPEAT
-    terminate <- FALSE
-    while (!terminate) {
+    current_generation <- 0
+    while (current_generation < generations) {
         # RECOMBINE
         offspring <- recombine(population)
 
-        print(offspring)
         # MUTATE
         offspring <- mutate(offspring)
-        print(offspring)
+
         # EVALUATE offspring
         for (i in seq_len(nrow(offspring))) {
             offspring[i, 5] <- fitness(offspring[i, 1], offspring[i, 2], params)
@@ -111,8 +130,19 @@ ES <- function(population_size) {
         # SELECT
         population <- select_survivors(population, offspring)
 
-        terminate <- TRUE
+        current_generation <- current_generation + 1
+        cat("\rES Progress:\t", floor(current_generation / generations * 100), "%")
     }
+
+    cat("\n")
+    print(population)
+    # sig <- matrix(c(1.430, 0, 0, 2.559), ncol = 2)
+    # print(sig)
+    # contour(dmvnorm(x = c(0, 0), mean = c(-1.062, 4.539)))
+    # # contour(params)
+    # print(params)
+
+    plot_gaussians(params)
 }
 
-ES(population_size = 5)
+ES(population_size = 5, generations = 100)
