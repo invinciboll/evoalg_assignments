@@ -8,10 +8,10 @@ load_rdata <- function(filename) {
 }
 
 init <- function(population_size) {
-    population <- matrix(, nrow = population_size, ncol = 3)
-    colnames(population) <- c("x", "y", "fitness")
+    population <- matrix(, nrow = population_size, ncol = 5)
+    colnames(population) <- c("x", "y", "sigma_x", "sigma_y", "fitness")
     for (i in seq_len(nrow(population))) {
-        population[i, ] <- c(sample(-5:5, 2), NA)
+        population[i, ] <- c(sample(-5:5, 2), NA, NA, NA)
     }
     return(population)
 }
@@ -28,8 +28,8 @@ fitness <- function(x, y, params) {
 
 # Intermediary recombination
 recombine <- function(population) {
-    offspring <- matrix(, nrow = nrow(population), ncol = 3)
-    colnames(offspring) <- c("x", "y", "fitness")
+    offspring <- matrix(, nrow = nrow(population), ncol = 5)
+    colnames(offspring) <- c("x", "y", "sigma_x", "sigma_y", "fitness")
     for (i in seq_len(nrow(population))) {
         # Get 1 random chosen partner (exclude the individual itself)
         partner_index <- i
@@ -40,8 +40,15 @@ recombine <- function(population) {
         offspring[i, 1] <- mean(c(population[i, 1], population[partner_index, 1]), trim = 0)
         offspring[i, 2] <- mean(c(population[i, 2], population[partner_index, 2]), trim = 0)
         offspring[i, 3] <- NA
+        offspring[i, 4] <- NA
+        offspring[i, 5] <- NA
     }
+    print(offspring)
     return(offspring)
+}
+
+mutate <- function() {
+
 }
 
 # Select survivors by 5+5 strategy
@@ -50,11 +57,13 @@ select_survivors <- function(population, offspring) {
 
     # Compare parent with its offspring, keep the fitter one. Children are favoured in case of a draw.
     new_population <- matrix(, nrow = nrow(population), ncol = ncol(population))
-    colnames(new_population) <- c("x", "y", "fitness")
+    colnames(new_population) <- c("x", "y", "sigma_x", "sigma_y", "fitness")
+    print(population)
+    print(offspring)
     for (i in seq_len(nrow(population))) {
-        if (population[i, 3] > offspring[i, 3]) {
+        if (population[i, 5] > offspring[i, 5]) {
             new_population[i, ] <- population[i, ]
-        } else if (offspring[i, 3] >= population[i, 3]) {
+        } else if (offspring[i, 5] >= population[i, 5]) {
             new_population[i, ] <- offspring[i, ]
         } else {
             stop()
@@ -71,7 +80,7 @@ ES <- function(population_size) {
 
     # EVALUATE
     for (i in seq_len(nrow(population))) {
-        population[i, 3] <- fitness(population[i, 1], population[i, 2], params)
+        population[, 5] <- fitness(population[i, 1], population[i, 2], params)
     }
 
     # REPEAT
@@ -84,15 +93,13 @@ ES <- function(population_size) {
 
         # EVALUATE offspring
         for (i in seq_len(nrow(offspring))) {
-            offspring[i, 3] <- fitness(offspring[i, 1], offspring[i, 2], params)
+            offspring[i, 5] <- fitness(offspring[i, 1], offspring[i, 2], params)
         }
 
         # SELECT
-        print(population)
-        print(offspring)
 
         population <- select_survivors(population, offspring)
-        print(population)
+
         terminate <- TRUE
     }
 }
