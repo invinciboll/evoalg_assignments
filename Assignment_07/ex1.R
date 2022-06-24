@@ -41,12 +41,31 @@ plot_gaussians <- function(params, population, first_run, z, current_generation)
     return(z)
 }
 
-
 plot_fitness_evolution <- function(data, generations) {
+    leg <- c()
     plot(c(1:generations), data[, 1], plot.title = title("Fitness evolution"), xlab = "Generation", ylab = "Fitness", type = "o", col = "blue", pch = ".", lty = 1, ylim = range(min(data), max(data)))
     for (i in seq_len(ncol(data))) {
-        lines(c(1:generations), data[, i], col = i, lty = 2)
+        lines(c(1:generations), data[, i], col = i, lty = 1)
+        leg <- c(leg, paste("Individual", i))
     }
+    legend("bottomright", "(x,y)",
+        legend = leg,
+        lty = rep(1, ncol(data)), ncol = 1, box.lty = 0, col = seq(i:ncol(data))
+    )
+}
+
+plot_sigma_evolution <- function(sigma_x_evolution, sigma_y_evolution, generations) {
+    plot(c(1:generations), sigma_x_evolution[, 1], plot.title = title("Sigma evolution"), xlab = "Generation", ylab = "Sigma", type = "o", col = "blue", pch = ".", lty = 1, ylim = range(min(c(min(sigma_x_evolution), min(sigma_y_evolution))), max(c(max(sigma_x_evolution), max(sigma_y_evolution)))))
+    for (i in seq_len(ncol(sigma_x_evolution))) {
+        lines(c(1:generations), sigma_x_evolution[, i], col = i, lty = 1)
+    }
+    for (i in seq_len(ncol(sigma_y_evolution))) {
+        lines(c(1:generations), sigma_y_evolution[, i], col = i, lty = 2)
+    }
+    legend("bottomright", "(x,y)",
+        legend = c("sigma_x", "sigma_y"),
+        lty = c(1, 2), ncol = 1, box.lty = 0,
+    )
 }
 
 # # # 2. ES functions
@@ -76,9 +95,10 @@ recombine <- function(population) {
     for (i in seq_len(nrow(population))) {
         # Get 1 random chosen partner (exclude the individual itself)
         partner_index <- i
-        while (partner_index == i) {
-            partner_index <- floor(runif(1, 1, nrow(population) + 1))
-        }
+        # while (partner_index == i) {
+        #     partner_index <- floor(runif(1, 1, nrow(population) + 1))
+        # }
+        partner_index <- floor(runif(1, 1, nrow(population) + 1))
         # Intermediary recombine them
         offspring[i, 1] <- mean(c(population[i, 1], population[partner_index, 1]), trim = 0)
         offspring[i, 2] <- mean(c(population[i, 2], population[partner_index, 2]), trim = 0)
@@ -123,12 +143,15 @@ select_survivors <- function(population, offspring) {
             stop()
         }
     }
+
     return(new_population)
 }
 
 ES <- function(population_size, generations, filename, filename_plots) {
     params <- load_rdata(filename)
     fitness_evolution <- matrix(, nrow = 0, ncol = population_size)
+    sigma_x_evolution <- matrix(, nrow = 0, ncol = population_size)
+    sigma_y_evolution <- matrix(, nrow = 0, ncol = population_size)
     cat("\tStarting...\n")
 
     # INITIALIZE
@@ -136,7 +159,7 @@ ES <- function(population_size, generations, filename, filename_plots) {
 
     # EVALUATE
     for (i in seq_len(nrow(population))) {
-        population[, 5] <- fitness(population[i, 1], population[i, 2], params)
+        population[i, 5] <- fitness(population[i, 1], population[i, 2], params)
     }
 
     # REPEAT
@@ -152,6 +175,7 @@ ES <- function(population_size, generations, filename, filename_plots) {
 
         # MUTATE
         offspring <- mutate(offspring)
+
 
         # EVALUATE offspring
         for (i in seq_len(nrow(offspring))) {
@@ -169,12 +193,14 @@ ES <- function(population_size, generations, filename, filename_plots) {
         }
 
         fitness_evolution <- rbind(fitness_evolution, c(population[5, ]))
+        sigma_x_evolution <- rbind(sigma_x_evolution, c(population[, 3]))
+        sigma_y_evolution <- rbind(sigma_y_evolution, c(population[, 4]))
         current_generation <- current_generation + 1
     }
-    plot_fitness_evolution(fitness_evolution, generations)
-    # plot_sigma_evolution(fitness_evolution)
-    dev.off()
 
+    plot_fitness_evolution(fitness_evolution, generations)
+    plot_sigma_evolution(sigma_x_evolution, sigma_y_evolution, generations)
+    dev.off()
     cat("\n\tDone.")
 }
 
@@ -182,7 +208,7 @@ ES <- function(population_size, generations, filename, filename_plots) {
 # # # 3. Run with given params data
 cat("ES with given data:\n")
 z <- matrix(0, nrow = 100, ncol = 100)
-ES(population_size = 5, generations = 200, filename = "params.RData", filename_plots = "plots-given-data.pdf")
+ES(population_size = 5, generations = 1000, filename = "params.RData", filename_plots = "plots-given-data.pdf")
 
 # # 4. Run with given own data
 cat("\n\nES with own data:\n")
@@ -204,4 +230,4 @@ if (!file.exists((own_data_filename))) {
 
 
 z <- matrix(0, nrow = 100, ncol = 100)
-ES(population_size = 5, generations = 200, filename = own_data_filename, filename_plots = "plots-own-data.pdf")
+ES(population_size = 5, generations = 1000, filename = own_data_filename, filename_plots = "plots-own-data.pdf")
