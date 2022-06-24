@@ -1,5 +1,5 @@
 # Josef Mayer, Sebastian Boll
-setwd("C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_07")
+# setwd("C:\\Users\\sboll\\studium\\EvoAlg\\Assignments\\assignment_07")
 library("mvtnorm")
 
 # Code Sections
@@ -35,7 +35,7 @@ plot_gaussians <- function(params, population, first_run, z, current_generation)
 
 
     filled.contour(x.points, y.points, z, nlevels = 10, plot.axes = {
-        points(population[1, ], population[2, ], plot.title = title(paste("Generations: ", current_generation)))
+        points(population[1,], population[2,], plot.title = title(paste("Generations: ", current_generation)))
     })
 
     return(z)
@@ -73,7 +73,7 @@ init <- function(population_size) {
     population <- matrix(, nrow = population_size, ncol = 5)
     colnames(population) <- c("x", "y", "sig_x", "sig_y", "fitness")
     for (i in seq_len(nrow(population))) {
-        population[i, ] <- c(sample(-5:5, 2), runif(2), NA)
+        population[i,] <- c(sample(-5:5, 2), runif(2), NA)
     }
     return(population)
 }
@@ -81,8 +81,8 @@ init <- function(population_size) {
 # Fitness function from exercise sheet
 fitness <- function(x, y, params) {
     result <- sum(apply(params, 2, function(p) {
-        a <- ((x - p["mn.x"])^2) / (2 * p["sd.x"])
-        b <- ((y - p["mn.y"])^2) / (2 * p["sd.y"])
+        a <- ((x - p["mn.x"]) ^ 2) / (2 * p["sd.x"])
+        b <- ((y - p["mn.y"]) ^ 2) / (2 * p["sd.y"])
         p["scale"] * exp(-(a + b))
     }))
     return(result)
@@ -118,7 +118,8 @@ mutate <- function(offspring) {
     tau_b <- (1 / (2 * sqrt(n)))
 
     for (j in seq_len(nrow(offspring))) {
-        for (i in seq_len(n)) { # 2 sigmas
+        for (i in seq_len(n)) {
+            # 2 sigmas
             offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * runif(1, 0, 1) + tau_b * runif(1, 0, 1))
             offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * runif(1, 0, 1)
         }
@@ -136,9 +137,9 @@ select_survivors <- function(population, offspring) {
 
     for (i in seq_len(nrow(population))) {
         if (population[i, 5] > offspring[i, 5]) {
-            new_population[i, ] <- population[i, ]
+            new_population[i,] <- population[i,]
         } else if (offspring[i, 5] >= population[i, 5]) {
-            new_population[i, ] <- offspring[i, ]
+            new_population[i,] <- offspring[i,]
         } else {
             stop()
         }
@@ -192,7 +193,7 @@ ES <- function(population_size, generations, filename, filename_plots) {
             first_run <- FALSE
         }
 
-        fitness_evolution <- rbind(fitness_evolution, c(population[5, ]))
+        fitness_evolution <- rbind(fitness_evolution, c(population[5,]))
         sigma_x_evolution <- rbind(sigma_x_evolution, c(population[, 3]))
         sigma_y_evolution <- rbind(sigma_y_evolution, c(population[, 4]))
         current_generation <- current_generation + 1
