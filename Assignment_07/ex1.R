@@ -121,8 +121,9 @@ mutate <- function(offspring) {
     for (j in seq_len(nrow(offspring))) {
         N <- runif(1, -1, 1)
         for (i in seq_len(2)) { # 2 sigmas
-            offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * N + tau_b * runif(1, -1, 1))
-            offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * runif(1, -1, 1)
+            N_i <- runif(1, -1, 1)
+            offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * N + tau_b * N_i)
+            offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * N_i
         }
     }
     return(offspring)
