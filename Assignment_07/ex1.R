@@ -17,7 +17,7 @@ load_rdata <- function(filename) {
 }
 
 plot_gaussians <- function(params, population, first_run, z, current_generation) {
-    x.points <- seq(-8, 8, length.out = 100)
+    x.points <- seq(-10, 10, length.out = 100)
     y.points <- x.points
 
     if (first_run) {
@@ -33,10 +33,12 @@ plot_gaussians <- function(params, population, first_run, z, current_generation)
         }
     }
 
+    contour(x.points, y.points, z, nlevels = 10, plot.title = title(paste("Generations: ", current_generation)))
+    # filled.contour(x.points, y.points, z, nlevels = 10, plot.title = title(paste("Generations: ", current_generation)))
 
-    filled.contour(x.points, y.points, z, nlevels = 10, plot.axes = {
-        points(population[1,], population[2,], plot.title = title(paste("Generations: ", current_generation)))
-    })
+    for (i in seq_len(nrow(population))) {
+        points(population[i, 1], population[i, 2], pch = 19, col = i, lty = 1)
+    }
 
     return(z)
 }
@@ -72,8 +74,9 @@ plot_sigma_evolution <- function(sigma_x_evolution, sigma_y_evolution, generatio
 init <- function(population_size) {
     population <- matrix(, nrow = population_size, ncol = 5)
     colnames(population) <- c("x", "y", "sig_x", "sig_y", "fitness")
+    sigmas <- c(2, 2)
     for (i in seq_len(nrow(population))) {
-        population[i,] <- c(sample(-5:5, 2), runif(2), NA)
+        population[i,] <- c(sample(-5:5, 2), sigmas, NA)
     }
     return(population)
 }
@@ -90,38 +93,48 @@ fitness <- function(x, y, params) {
 
 # Intermediary recombination
 recombine <- function(population) {
+    #  alpha <- 0.25
     offspring <- matrix(, nrow = nrow(population), ncol = 5)
     colnames(offspring) <- c("x", "y", "sig_x", "sig_y", "fitness")
     for (i in seq_len(nrow(population))) {
         # Get 1 random chosen partner (exclude the individual itself)
         partner_index <- i
-        # while (partner_index == i) {
-        #     partner_index <- floor(runif(1, 1, nrow(population) + 1))
-        # }
-        partner_index <- floor(runif(1, 1, nrow(population) + 1))
+        while (partner_index == i) {
+            partner_index <- sample(seq_len(nrow(population)), 1)
+        }
         # Intermediary recombine them
+        # takes weighted sum of alleles from parents
         offspring[i, 1] <- mean(c(population[i, 1], population[partner_index, 1]), trim = 0)
         offspring[i, 2] <- mean(c(population[i, 2], population[partner_index, 2]), trim = 0)
         offspring[i, 3] <- mean(c(population[i, 3], population[partner_index, 3]), trim = 0)
         offspring[i, 4] <- mean(c(population[i, 4], population[partner_index, 4]), trim = 0)
         offspring[i, 5] <- NA
-    }
 
+        #* trying not whole arithmetic recombination
+        # offspring[i, 1] <- alpha * population[i, 1] + (1 - alpha) * population[partner_index, 1]
+        # offspring[i, 2] <- alpha * population[i, 2] + (1 - alpha) * population[partner_index, 2]
+        # offspring[i, 3] <- alpha * population[i, 3] + (1 - alpha) * population[partner_index, 3]
+        # offspring[i, 4] <- alpha * population[i, 4] + (1 - alpha) * population[partner_index, 4]
+        # offspring[i, 5] <- alpha * population[i, 5] + (1 - alpha) * population[partner_index, 5]
+    }
     return(offspring)
 }
 
 # Self adapting non-correlating mutation with a sigma for each chromosome
 mutate <- function(offspring) {
-    n <- 2 # 2 chromosomes (x, y) and 2 sigmas
+    learning_rate <- 2
     # Mutate sigma
-    tau_a <- (1 / sqrt(2 * n))
-    tau_b <- (1 / (2 * sqrt(n)))
-
+    tau_a <- (1 / sqrt(2 * learning_rate))
+    tau_b <- (1 / (2 * sqrt(learning_rate)))
     for (j in seq_len(nrow(offspring))) {
-        for (i in seq_len(n)) {
+        N <- rnorm(1)
+        # Es werden die Parameter x und y mutiert
+        for (i in seq_len(2)) {
             # 2 sigmas
-            offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * runif(1, 0, 1) + tau_b * runif(1, 0, 1))
-            offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * runif(1, 0, 1)
+            N_i <- rnorm(1)
+            # verändern des sigma
+            offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * N + tau_b * N_i)
+            offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * N_i
         }
     }
     return(offspring)
@@ -138,13 +151,10 @@ select_survivors <- function(population, offspring) {
     for (i in seq_len(nrow(population))) {
         if (population[i, 5] > offspring[i, 5]) {
             new_population[i,] <- population[i,]
-        } else if (offspring[i, 5] >= population[i, 5]) {
-            new_population[i,] <- offspring[i,]
         } else {
-            stop()
+            new_population[i,] <- offspring[i,]
         }
     }
-
     return(new_population)
 }
 
@@ -171,12 +181,12 @@ ES <- function(population_size, generations, filename, filename_plots) {
     first_run <- TRUE
 
     while (current_generation <= generations) {
+
         # RECOMBINE
         offspring <- recombine(population)
 
         # MUTATE
         offspring <- mutate(offspring)
-
 
         # EVALUATE offspring
         for (i in seq_len(nrow(offspring))) {
@@ -187,13 +197,13 @@ ES <- function(population_size, generations, filename, filename_plots) {
         population <- select_survivors(population, offspring)
 
         cat("\r\tES Progress:\t", floor(current_generation / generations * 100), "%,")
-        # Generate first + 4 plots per ES run
-        if (((current_generation %% (generations / 4)) == 0) || first_run) {
+        # Generate first + 5 plots per ES run
+        if (((current_generation %% (generations / 5)) == 0) || first_run) {
             z <- plot_gaussians(params, population, first_run, z, current_generation)
             first_run <- FALSE
         }
 
-        fitness_evolution <- rbind(fitness_evolution, c(population[5,]))
+        fitness_evolution <- rbind(fitness_evolution, c(population[, 5]))
         sigma_x_evolution <- rbind(sigma_x_evolution, c(population[, 3]))
         sigma_y_evolution <- rbind(sigma_y_evolution, c(population[, 4]))
         current_generation <- current_generation + 1
@@ -208,8 +218,8 @@ ES <- function(population_size, generations, filename, filename_plots) {
 
 # # # 3. Run with given params data
 cat("ES with given data:\n")
-z <- matrix(0, nrow = 100, ncol = 100)
-ES(population_size = 5, generations = 1000, filename = "params.RData", filename_plots = "plots-given-data.pdf")
+z <- matrix(0, nrow = 100, ncol = 100) # relevant for plotting
+ES(population_size = 5, generations = 200, filename = "params.RData", filename_plots = "plots-given-data.pdf")
 
 # # 4. Run with given own data
 cat("\n\nES with own data:\n")
@@ -229,6 +239,5 @@ if (!file.exists((own_data_filename))) {
     cat("\tOwn data file found!\n")
 }
 
-
-z <- matrix(0, nrow = 100, ncol = 100)
-ES(population_size = 5, generations = 1000, filename = own_data_filename, filename_plots = "plots-own-data.pdf")
+z <- matrix(0, nrow = 100, ncol = 100) # relevant for plotting
+ES(population_size = 5, generations = 200, filename = own_data_filename, filename_plots = "plots-own-data.pdf")
