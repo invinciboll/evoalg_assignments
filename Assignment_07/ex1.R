@@ -17,7 +17,7 @@ load_rdata <- function(filename) {
 }
 
 plot_gaussians <- function(params, population, first_run, z, current_generation) {
-    x.points <- seq(-8, 8, length.out = 100)
+    x.points <- seq(-10, 10, length.out = 100)
     y.points <- x.points
 
     if (first_run) {
@@ -72,8 +72,9 @@ plot_sigma_evolution <- function(sigma_x_evolution, sigma_y_evolution, generatio
 init <- function(population_size) {
     population <- matrix(, nrow = population_size, ncol = 5)
     colnames(population) <- c("x", "y", "sig_x", "sig_y", "fitness")
+    sigmas <- c(4, 4)
     for (i in seq_len(nrow(population))) {
-        population[i, ] <- c(sample(-5:5, 2), runif(2), NA)
+        population[i, ] <- c(sample(-5:5, 2), sigmas, NA)
     }
     return(population)
 }
@@ -95,9 +96,9 @@ recombine <- function(population) {
     for (i in seq_len(nrow(population))) {
         # Get 1 random chosen partner (exclude the individual itself)
         partner_index <- i
-        # while (partner_index == i) {
-        #     partner_index <- floor(runif(1, 1, nrow(population) + 1))
-        # }
+        while (partner_index == i) {
+            partner_index <- floor(runif(1, 1, nrow(population) + 1))
+        }
         partner_index <- floor(runif(1, 1, nrow(population) + 1))
         # Intermediary recombine them
         offspring[i, 1] <- mean(c(population[i, 1], population[partner_index, 1]), trim = 0)
@@ -112,15 +113,16 @@ recombine <- function(population) {
 
 # Self adapting non-correlating mutation with a sigma for each chromosome
 mutate <- function(offspring) {
-    n <- 2 # 2 chromosomes (x, y) and 2 sigmas
+    learning_rate <- 1 # 2 chromosomes (x, y) and 2 sigmas
     # Mutate sigma
-    tau_a <- (1 / sqrt(2 * n))
-    tau_b <- (1 / (2 * sqrt(n)))
+    tau_a <- (1 / sqrt(2 * learning_rate))
+    tau_b <- (1 / (2 * sqrt(learning_rate)))
 
     for (j in seq_len(nrow(offspring))) {
-        for (i in seq_len(n)) { # 2 sigmas
-            offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * runif(1, 0, 1) + tau_b * runif(1, 0, 1))
-            offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * runif(1, 0, 1)
+        N <- runif(1, -1, 1)
+        for (i in seq_len(2)) { # 2 sigmas
+            offspring[j, i + 2] <- offspring[j, i + 2] * exp(tau_a * N + tau_b * runif(1, -1, 1))
+            offspring[j, i] <- offspring[j, i] + offspring[j, i + 2] * runif(1, -1, 1)
         }
     }
     return(offspring)
@@ -207,7 +209,7 @@ ES <- function(population_size, generations, filename, filename_plots) {
 
 # # # 3. Run with given params data
 cat("ES with given data:\n")
-z <- matrix(0, nrow = 100, ncol = 100)
+z <- matrix(0, nrow = 100, ncol = 100) # relevant for plotting
 ES(population_size = 5, generations = 1000, filename = "params.RData", filename_plots = "plots-given-data.pdf")
 
 # # 4. Run with given own data
@@ -229,5 +231,5 @@ if (!file.exists((own_data_filename))) {
 }
 
 
-z <- matrix(0, nrow = 100, ncol = 100)
+z <- matrix(0, nrow = 100, ncol = 100) # relevant for plotting
 ES(population_size = 5, generations = 1000, filename = own_data_filename, filename_plots = "plots-own-data.pdf")
